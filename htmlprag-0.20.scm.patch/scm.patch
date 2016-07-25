@@ -1,0 +1,56 @@
+--- htmlprag.rkt	2015-12-02 20:40:21.000000000 +0900
++++ htmlprag.scm	2016-04-04 22:46:09.500547807 +0900
+@@ -1,4 +1,4 @@
+-#lang racket/base
++(use srfi-13)
+ ;;; @Package     HtmlPrag
+ ;;; @Subtitle    Pragmatic Parsing and Emitting of HTML using SXML and SHTML
+ ;;; @HomePage    http://www.neilvandyke.org/htmlprag/
+@@ -1088,7 +1088,7 @@
+                         (cond ((not beg-name)
+                                ;; We reached the root without finding a
+                                ;; matching beg, so simply discard it.
+-                               (void))
++                               #f)
+                               ((eqv? name beg-name)
+                                ;; We found a match, so finish the begs up to
+                                ;; depth.
+@@ -1111,7 +1111,7 @@
+                         (cond ((not beg-name)
+                                ;; We reached the root without finding a
+                                ;; matching beg, so simply discard it.
+-                               (void))
++                               #f)
+                               ((memq beg-name names)
+                                ;; We found a match, so finish the begs up to
+                                ;; depth.
+@@ -1757,29 +1757,3 @@
+ ;;;
+ ;;; @end table
+ 
+-(provide
+- html->shtml
+- html->sxml
+- html->sxml-0nf
+- html->sxml-1nf
+- html->sxml-2nf
+- make-html-tokenizer
+- make-shtml-entity
+- parse-html/tokenizer
+- shtml->html
+- shtml-comment-symbol
+- shtml-decl-symbol
+- shtml-empty-symbol
+- shtml-end-symbol
+- shtml-entity-symbol
+- shtml-entity-value
+- shtml-named-char-id
+- shtml-numeric-char-id
+- shtml-pi-symbol
+- shtml-start-symbol
+- shtml-text-symbol
+- shtml-token-kind
+- shtml-top-symbol
+- tokenize-html
+- write-shtml-as-html)
+-
