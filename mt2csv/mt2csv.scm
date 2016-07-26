@@ -13,7 +13,7 @@
 (define %make-entry
   (lambda (iport body?)
     (let1 line (read-line iport)
-      (when (not (eof-object? line))
+      (unless (eof-object? line)
         (let1 entry (%sanitize line) 
           (cond ((string-scan entry "TITLE: " 'after) => (cut format #t "\"~a\"\," <>))
                 ((string-scan entry "PRIMARY CATEGORY: ") #f)
