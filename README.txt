@@ -1,3 +1,6 @@
+ちょっとしたプログラムをちょこちょこと書き続けるのが、一番勉強になると思う。
+
+
 ■とにかく読む
 
 なんでもλ | http://practical-scheme.net/docs/lambda-j.html
@@ -77,6 +80,14 @@ Scheme:使いたい人のための継続入門 |  http://practical-scheme.net/wi
 継続 | http://www.h4.dion.ne.jp/~unkai/scm/scm02.html
 
 Gauche ユーザリファレンス: 9.21 gauche.partcont - 部分継続 | http://practical-scheme.net/gauche/man/gauche-refj_97.html#g_t_00e9_0083_00a8_00e5_0088_0086_00e7_00b6_0099_00e7_00b6_009a
+
+
+■クロージャ
+
+お気楽 Scheme プログラミング入門 | http://www.geocities.jp/m_hiroi/func/abcscm10.html
+
+(クロージャの使い方) | http://www.geocities.co.jp/SiliconValley-PaloAlto/7043/index.html#closure
+
 
 
 ■librarys
