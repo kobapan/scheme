@@ -36,21 +36,6 @@
                      (cond ((pair? args) (set! flag (car args)))
                            (else flag) ))))))
 
-
-;; クロージャ ← 環境（この場合はlet）の中で手続きを宣言する。静的スコープ
-;; (define body?
-;;   (let ((flag #f))
-;;     (lambda args
-;;       (cond ((pair? args) (set! flag (car args)))
-;;             (else flag) ))))
-;;
-;; 下記はよく似ているように思うが、手続きの中でletが呼ばれている。これは手続きの環境にはならない。
-;; (define body?
-;;   (lambda args
-;;     (let ((flag #f))
-;;       (cond ((pair? args) (set! flag (car args)))
-;;             (else flag) ))))
-
 (define main
   (lambda (args)
     (match args
