@@ -17,8 +17,8 @@
             (else (set! flag (car args))) ))))
 
 (define %make-entry
-  (lambda (iport body-on?)
-    (let1 line (read-line iport)
+  (lambda (body-on?)
+    (let1 line (read-line)
       (unless (eof-object? line)
         (let1 entry (%sanitize line) 
           (cond 
@@ -30,21 +30,18 @@
            ((string-scan entry "-----") (when (body-on?) (body-on? #f)))
            ((string-scan entry "--------") ; end of 1 post
             (display "\"")
-            (newline (current-output-port)) )
+            (newline) )
            ((body-on?) (print entry))
            (else #f) )
-          (%make-entry iport body-on?) )))))
-
-(define %doit
-  (lambda (iport)
-    (%make-entry iport on?) ))
+          (%make-entry body-on?) )))))
 
 (define main
   (lambda (args)
     (match args
       ((_ ifile ofile)
        (with-output-to-file ofile
-         (lambda () (call-with-input-file ifile %doit))) )
+         (lambda () (with-input-from-file ifile
+                      (lambda () (%make-entry on?)) ))))
       (else
        (print #`"Usage: ,(car args) <ifile> <ofile>\n")
        (exit 0) ))))
