@@ -1,20 +1,8 @@
 # htmlprag-0.20.scm
 
-[htmlprag.rkt (htmlprag-0.20)](http://planet.racket-lang.org/package-source/neil/htmlprag.plt/1/7/htmlprag.rkt) code patch to be used in scheme.
+This patch is for [htmlprag.rkt (htmlprag-0.20)](http://planet.racket-lang.org/package-source/neil/htmlprag.plt/1/7/htmlprag.rkt) to be used in other Scheme (Tested with Gauche 0.9.4).
 
-This patch file was made by the command "diff -urN htmlprag.rkt htmlprag.scm > scm.patch".
+HtmlPrag provides permissive HTML parsing and emitting capability to Scheme programs.  The parser is useful for software agent extraction of information from Web pages, for programmatically transforming HTML files, and for implementing interactive Web browsers.  HtmlPrag emits ``SHTML,'' which is an encoding of HTML in [SXML](http://okmij.org/ftp/Scheme/SXML.html), so that conventional HTML may be processed with XML tools such as SXPath.
 
-Tested with Gauche 0.9.4
 
-# usage
-
->$ ls
-
->htmlprag.rkt  scm.patch
-
->$ patch -p0 < scm.patch
-
->patching file 'htmlprag.rkt'
-
->$ mv htmlprag.rkt htmlprag.scm
 
