@@ -2,7 +2,7 @@
 ;----------------
 ; Auther: <kobapan>
 ; Information: <mt2csv.scm>
-; last modified: <2016/09/06 12:20:41> 
+; last modified: <2016/09/06 12:26:23> 
 ;
 ; movableTypeからエクスポートしたブログのデータを
 ; csv形式に変換する
@@ -52,4 +52,3 @@
       (else
        (print #`"Usage: ,(car args) <ifile> <ofile>\n")
        (exit 0) ))))
-
