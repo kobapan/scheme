@@ -1,7 +1,7 @@
 #!/usr/bin/env gosh
 ;----------------
 ; movableTypeからエクスポートしたブログのデータを
-; csv形式に変換する
+; csv形式に変換する gauche-schemeスクリプト
 ;
 ; TODO
 ; 
