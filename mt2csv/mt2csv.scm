@@ -1,9 +1,5 @@
 #!/usr/bin/env gosh
 ;----------------
-; Auther: <kobapan>
-; Information: <mt2csv.scm>
-; last modified: <2016/09/06 12:26:23> 
-;
 ; movableTypeからエクスポートしたブログのデータを
 ; csv形式に変換する
 ;
@@ -17,6 +13,7 @@
   (lambda (in)
     (regexp-replace-all "\"" in "'") ))
 
+; make-parameter で同じことができるが、勉強のためにあえて
 (define on?
   (lambda ()
     (let1 flag #f
