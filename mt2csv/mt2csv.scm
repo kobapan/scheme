@@ -1,11 +1,11 @@
 #!/usr/bin/env gosh
-;----------------
-; movableTypeからエクスポートしたブログのデータを
-; csv形式に変換する gauche-schemeスクリプト
-;
-; TODO
-; 
-;----------------
+;;----------------
+;; movableTypeからエクスポートしたブログのデータを
+;; csv形式に変換する gauche-schemeスクリプト
+;;
+;; parameter <https://practical-scheme.net/gauche/man/gauche-refj/parameta.html>
+;; 
+;;----------------
 
 (use util.match)
 
