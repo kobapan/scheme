@@ -9,6 +9,7 @@
 
 (use util.match)
 
+; " を ' に変換
 (define %sanitize
   (lambda (in)
     (regexp-replace-all "\"" in "'") ))
@@ -21,6 +22,8 @@
         (cond ((null? args) flag)
               (else (set! flag (car args))) )))))
 
+; read-lineで読み込んだ1行ずつ処理
+; 必用な行だけ変換して返す
 (define %make-entry
   (lambda (body? comment?)
     (let1 line (read-line)
