@@ -9,7 +9,7 @@
 
 (use util.match)
 
-; " を ' に変換
+; " を ' に変換する手続きを返す
 (define %sanitize
   (lambda (in)
     (regexp-replace-all "\"" in "'") ))
@@ -30,7 +30,7 @@
 ;; 接頭単語とフラグに従って
 ;; 現在の出力ポートにフォーマット出力
 ;; 無視
-;; を行う
+;; を行う手続きを返す
 (define %make-entry
   (lambda (body? comment?)
     (let1 line (read-line)
