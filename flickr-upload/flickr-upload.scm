@@ -15,8 +15,6 @@
 ;;
 ;; rxmatch-let や rxmatch-if の使い方がいまいち
 
-;; TODO git push
-
 (use util.match); match
 (use gauche.process); process-output->string,process-output->string-list
 
@@ -37,7 +35,7 @@ image-path[ title]
 
 ;; id で flickrdf を呼び出して
 ;; flickr画像のurlを取得して
-;; TITLE[~a] ID[~a] URL[~a]\nを返す
+;; TITLE[~a] URL[~a]\nを現在の標準出力に印字
 (define %geturl
   (lambda (uid title id)
     (format #t "TITLE[~a] URL[~a]\n"
@@ -47,7 +45,7 @@ image-path[ title]
  | grep '\"Medium\"' | grep -o 'https://.*jpg'") )))
 
 ;; img-path と title で  flickcurl upload を呼び出して
-;; photoIDを返す
+;; photoIDを現在の標準出力に印字
 (define %upload
   (lambda (img-path title)
     (let* ((res (process-output->string-list
