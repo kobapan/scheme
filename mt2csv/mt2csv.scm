@@ -1,19 +1,24 @@
 #!/usr/bin/env gosh
-;----------------
-; movableTypeからエクスポートしたブログのデータを
-; csv形式に変換する gauche-schemeスクリプト
-;
-; TODO
-; 
-;----------------
+;;----------------
+;; movableTypeからエクスポートしたブログのデータを
+;; csv形式に変換する gauche-schemeスクリプト
+;;
+;; parameter <https://practical-scheme.net/gauche/man/gauche-refj/parameta.html>
+;; 
+;;----------------
 
 (use util.match)
 
+;; " を ' に変換
 (define %sanitize
   (lambda (in)
     (regexp-replace-all "\"" in "'") ))
 
-; make-parameter で同じことができるが、勉強のためにあえて
+;; 省略可能な1引数を取り、
+;; 引数がある場合、flagに引数の値を束縛し
+;; 引数がない場合、flagの値を返す
+;; という手続きを返す。
+;; make-parameter で同じことができるが、勉強のためにあえて
 (define on?
   (lambda ()
     (let1 flag #f
@@ -21,6 +26,11 @@
         (cond ((null? args) flag)
               (else (set! flag (car args))) )))))
 
+;; 現在の入力ポートから1行読み取り
+;; 接頭単語とフラグに従って
+;; 現在の出力ポートにフォーマット出力
+;; 無視
+;; を行う手続きを返す
 (define %make-entry
   (lambda (body? comment?)
     (let1 line (read-line)

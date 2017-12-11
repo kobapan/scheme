@@ -86,10 +86,23 @@ Gauche ユーザリファレンス: 9.21 gauche.partcont - 部分継続 | http:/
 
 ■クロージャ
 
-お気楽 Scheme プログラミング入門 | http://www.geocities.jp/m_hiroi/func/abcscm10.html
+手続きに環境を持たせるには、環境（この場合はlet）の中で手続きを宣言 (lambda ... ) する
 
-(クロージャの使い方) | http://www.geocities.co.jp/SiliconValley-PaloAlto/7043/index.html#closure
+(define body?
+  (let ((flag #f))
+    (lambda args
+      (cond ((pair? args) (set! flag (car args)))
+            (else flag) ))))
 
+この場合、、変数 flag は (lambda ... ) からだけ参照可能なグローバル変数であるかのように扱うことができる。Class内の変数のような感じ。
+
+下記はよく似ているように思うが、手続きの中でletが呼ばれている。これは手続き (lambda args ... ) の環境ではなく、内部の変数。
+
+(define body?
+  (lambda args
+    (let ((flag #f))
+      (cond ((pair? args) (set! flag (car args)))
+            (else flag) ))))
 
 
 ■librarys
