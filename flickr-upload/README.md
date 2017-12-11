@@ -10,7 +10,6 @@ FlickrのコマンドラインAPI、flickcurlが便利なので、複数ファ�
 flickr-upload.scm FLICKR-USERNAME INFILE
 
 ## INFILEの構文
+改行区切りで、
 image-path[ title]
-.
-.
-.
+
