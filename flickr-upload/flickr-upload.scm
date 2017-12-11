@@ -19,9 +19,8 @@
 (use gauche.process); process-output->string,process-output->string-list
 
 (define usage
-  (lambda (program-name)
-      (format (current-error-port)
-          "Usage: ~a <user> <infile>
+  (lambda ()
+    (print #"Usage: ~*program-name* <user> <infile>
 infile
 --------
 image-path[ title]
@@ -29,8 +28,7 @@ image-path[ title]
 .
 .
 ----
-" program-name)
-      (exit 2)))
+") ))
 
 
 ;; id で flickrdf を呼び出して
@@ -45,7 +43,7 @@ image-path[ title]
  | grep '\"Medium\"' | grep -o 'https://.*jpg'") )))
 
 ;; img-path と title で  flickcurl upload を呼び出して
-;; photoIDを現在の標準出力に印字
+;; ID[photoID]を現在の標準出力に印字
 (define %upload
   (lambda (img-path title)
     (let* ((res (process-output->string-list
@@ -53,6 +51,10 @@ image-path[ title]
            (id (rxmatch->string #/: (.+)/ (caddr res) 1)))
       (format #t "ID[~a] " id)
       id )))
+
+(define %call
+  (lambda (uid title file)
+    (%geturl uid title (%upload file title))))
 
 ;; 現在の入力ポートから1行ずつ読み取り
 ;; 画像ファイルパスとタイトルを
@@ -66,19 +68,18 @@ image-path[ title]
         (rxmatch-cond
          ((#/([^ ]+\.[jpg|png|gif]+) ([^ ]+)/ line)
           (#f file title)
-          (%geturl uid title (%upload file title)) )
+          (%call uid title file) )
          ((#/([^ ]+\.[jpg|png|gif]+)/ line)
           (#f file)
-          (let1 base-name (sys-basename file)
-            (%geturl uid base-name (%upload file base-name)) )))
+          (%call uid (sys-basename file) file) ))
         (%do uid) ))))
 
 (define main
   (lambda (args)
     (match args
-      ((program-name user infile)
+      ((_ user infile)
        (with-input-from-file infile
                       (lambda () (%do user) )))
       (else
-       (usage program-name) ))
+       (usage) ))
     0 ))
