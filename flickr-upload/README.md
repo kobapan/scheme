@@ -7,9 +7,9 @@ FlickrのコマンドラインAPI、flickcurlが便利なので、複数ファ�
 - [flickcurlのインストール](https://www20.atwiki.jp/kobapan/pages/332.html#id_53b77e44)
 
 # 使い方
-flickr-upload.scm <flickr-username> <infile>
+flickr-upload.scm FLICKR-USERNAME INFILE
 
-## infileの構文
+## INFILEの構文
 image-path[ title]
 .
 .
