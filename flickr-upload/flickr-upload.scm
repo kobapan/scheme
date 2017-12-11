@@ -15,6 +15,8 @@
 ;;
 ;; rxmatch-let や rxmatch-if の使い方がいまいち
 
+;; TODO git push
+
 (use util.match); match
 (use gauche.process); process-output->string,process-output->string-list
 

@@ -9,7 +9,7 @@
 
 (use util.match)
 
-;; " を ' に変換
+;; " を ' に変換する手続きを返す
 (define %sanitize
   (lambda (in)
     (regexp-replace-all "\"" in "'") ))
