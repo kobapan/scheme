@@ -73,7 +73,8 @@ image-path[ title]
           (%call uid file title) )
          ((#/([^ ]+\.(jpg|png|gif))/ line)
           (#f file #f)
-          (%call uid file (sys-basename file)) ))
+          (%call uid file (sys-basename file)) )
+         (else (usage)) )
         (%do uid) ))))
 
 (define main
