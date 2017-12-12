@@ -20,7 +20,7 @@
 
 (define usage
   (lambda ()
-    (print #"Usage: ~(sys-basename *program-name*) <user> <infile>
+    (print #"Usage: ~(sys-basename *program-name*) <flickr-id> <infile>
 infile
 --------
 image-path[ title]
