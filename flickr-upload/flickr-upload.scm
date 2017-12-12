@@ -31,47 +31,49 @@ image-path[ title]
 ") ))
 
 
-;; id で flickrdf を呼び出して
+;; ID で flickrdf を呼び出して
 ;; flickr画像のurlを取得して
-;; TITLE[~a] URL[~a]\nを現在の標準出力に印字
+;; URL[~a]\nを現在の標準出力に印字
 (define %geturl
-  (lambda (uid title id)
-    (format #t "TITLE[~a] URL[~a]\n"
-     title
+  (lambda (uid id)
+    (format #t "URL[~a]\n"
      (process-output->string
                #"flickrdf http://www.flickr.com/photos/~|uid|/~|id|/\
  | grep '\"Medium\"' | grep -o 'https://.*jpg'") )))
 
 ;; img-path と title で  flickcurl upload を呼び出して
-;; ID[photoID]を現在の標準出力に印字
+;; ID[photoID] TITLE[title] を現在の標準出力に印字
+;; IDを返す
 (define %upload
   (lambda (img-path title)
     (let* ((res (process-output->string-list
                  #"flickcurl upload \"~|img-path|\" title \"~|title|\" public"))
            (id (rxmatch->string #/: (.+)/ (caddr res) 1)))
-      (format #t "ID[~a] " id)
+      (format #t "ID[~a] TITLE[~a] " id title)
       id )))
 
-(define %call
-  (lambda (uid title file)
-    (%geturl uid title (%upload file title))))
-
-;; 現在の入力ポートから1行ずつ読み取り
 ;; 画像ファイルパスとタイトルを
 ;; %uploadに渡して帰ったIDを
-;; %geturlに渡して
+;; %geturlに渡す
+(define %call
+  (lambda (uid file title)
+    (%geturl uid (%upload file title))))
+
+;; 現在の入力ポートから1行ずつ読み取り
+;; UIDと画像ファイルパスとタイトルを
+;; %call に渡して
 ;; 自身を呼び出す
 (define %do
   (lambda (uid)
     (let1 line (read-line)
       (unless (eof-object? line)
         (rxmatch-cond
-         ((#/([^ ]+\.[jpg|png|gif]+) ([^ ]+)/ line)
-          (#f file title)
-          (%call uid title file) )
-         ((#/([^ ]+\.[jpg|png|gif]+)/ line)
-          (#f file)
-          (%call uid (sys-basename file) file) ))
+         ((#/([^ ]+\.(jpg|png|gif)) ([^ ]+)/ line)
+          (#f file #f title)
+          (%call uid file title) )
+         ((#/([^ ]+\.(jpg|png|gif))/ line)
+          (#f file #f)
+          (%call uid file (sys-basename file)) ))
         (%do uid) ))))
 
 (define main
