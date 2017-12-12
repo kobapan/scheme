@@ -28,7 +28,8 @@ image-path[ title]
 .
 .
 ----
-") ))
+")
+    (exit 2) ))
 
 
 ;; ID で flickrdf を呼び出して
