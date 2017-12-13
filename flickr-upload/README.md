@@ -1,6 +1,6 @@
 # flickcurlのラッパー
 
-FlickrのコマンドラインAPI、flickcurlが便利なので、複数ファイルを一度にアップロードするためのラッパープログラムを作りました。
+C library for the Flickr API, flickcurl についてくるコマンドラインユーティリティが便利なので、複数ファイルを一度にアップロードするためのラッパープログラムを作りました。
 
 # flickcurl
 <a href="http://librdf.org/flickcurl/" target="_blank">Flickcurl公式</a>
