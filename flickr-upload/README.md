@@ -3,10 +3,10 @@
 FlickrのコマンドラインAPI、flickcurlが便利なので、複数ファイルを一度にアップロードするためのラッパープログラムを作りました。
 
 # flickcurl
-[Flickcurl公式](http://librdf.org/flickcurl/){:target="_blank"}
+<a href="http://librdf.org/flickcurl/" target="_blank">Flickcurl公式</a>
 
 事前にflickcurlをインストール＆設定しておく必要があります。  
-→ [Flickr/flickcurl-コマンドラインでFlickr](https://www20.atwiki.jp/kobapan/pages/332.html#id_53b77e44){:target="_blank"}
+→ <a href="https://www20.atwiki.jp/kobapan/pages/332.html" target="_blank">Flickr/flickcurl-コマンドラインでFlickr</a>
 
 # 使い方
 flickrのユーザ名と、アップロードする画像ファイルのパス名を記述したファイル名を、引数にとります。
