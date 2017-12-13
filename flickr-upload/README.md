@@ -25,4 +25,4 @@ flickrのユーザ名と、アップロードする画像ファイルのパス�
 > .
 
 ## 蛇足：INFILEの作り方
-> $ find $PWD/* -type f -regex ".*\(jpg\|jpeg\|gif\|png\)" > up.txt
+> $ find $PWD/* -regex ".*\(jpg\|jpeg\|gif\|png\)" > up.txt
