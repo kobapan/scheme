@@ -2,30 +2,16 @@
 
 ;; flickcurlのラッパー
 ;; Flickcurl: C library for the Flickr API <http://librdf.org/flickcurl/>
-;;
 
-;; 1引数にファイル名を取り
+;; 引数にflickrIDとファイル名を取り
 ;; ファイル内に1行ずつ記述された画像ファイルを
 ;; flickcurlに渡して、flickrにアップロードし
-;; 得られたphotoIDで持って、画像のURLを取得しflickrdf
+;; 得られたphotoIDとflickrIDをflickrdfに渡して、画像のURLを取得し
 ;; 標準出力に返す
 ;;
 ;; regexp <http://practical-scheme.net/gauche/man/gauche-refj/Zheng-Gui-Biao-Xian-.html#index-regexp-1>
-;; rxmatch-let <http://practical-scheme.net/gauche/man/gauche-refj/Zheng-Gui-Biao-Xian-.html#index-rxmatch_002dpositions>
+;; rxmatch-if <http://practical-scheme.net/gauche/man/gauche-refj/Zheng-Gui-Biao-Xian-.html#index-rxmatch_002dif>
 ;; コマンドの出力を取る <https://practical-scheme.net/wiliki/wiliki.cgi?Scheme%3A%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E5%87%A6%E7%90%86#H-mocs7o>
-;;
-
-;; USAGE
-;; $ flickr-upload.scm <flickr-id> <infile>
-;; 
-;; infile's syntax
-;; --------
-;; /path/to/image.(jpg|jpeg|png|gif)[ title]
-;; .
-;; .
-;; .
-;; ----
-
 
 (use util.match); match
 (use gauche.process); process-output->string,process-output->string-list
@@ -44,6 +30,29 @@ infile's syntax
 ----
 ")
     (exit 2) ))
+
+(define main
+  (lambda (args)
+    (match args
+      ((_ user infile)
+       (with-input-from-file infile (lambda () (%do user) )))
+      (else
+       (usage "args error.") ))
+    0 ))
+
+;; 現在の入力ポートから1行ずつ読み取り
+;; 画像ファイルパスとタイトルを
+;; %uploadに渡して帰ったIDを%geturlに渡して
+;; 自身を呼び出す
+(define %do
+  (lambda (uid)
+    (let1 line (read-line)
+      (unless (eof-object? line)
+        (rxmatch-if (#/([^ ]+\.(jpg|jpeg|png|gif))( ([^ ]+))?/ line)
+          (#f file #f #f title)
+          (%geturl uid (%upload file title))
+         (usage "file syntax error.") )
+        (%do uid) ))))
 
 ;; UID と ID で flickrdf を呼び出して
 ;; flickr画像のurlを取得して
@@ -67,26 +76,4 @@ infile's syntax
       (format #t "ID[~a] TITLE[~a] " id (if title title ""))
       id )))
 
-;; 現在の入力ポートから1行ずつ読み取り
-;; 画像ファイルパスとタイトルを
-;; %uploadに渡して帰ったIDを
-;; %geturlに渡して
-;; 自身を呼び出す
-(define %do
-  (lambda (uid)
-    (let1 line (read-line)
-      (unless (eof-object? line)
-        (rxmatch-if (#/([^ ]+\.(jpg|jpeg|png|gif))( ([^ ]+))?/ line)
-          (#f file #f #f title)
-          (%geturl uid (%upload file title))
-         (usage "file format error.") )
-        (%do uid) ))))
 
-(define main
-  (lambda (args)
-    (match args
-      ((_ user infile)
-       (with-input-from-file infile (lambda () (%do user) )))
-      (else
-       (usage "args error.") ))
-    0 ))
