@@ -12,9 +12,9 @@
 - [Flickr API Documentation](https://www.flickr.com/services/api/)
 - [Flickr API ドキュメント日本語訳](http://westplain.sakuraweb.com/translate/flickr/Top.cgi)
 
-- [Flickr Services | User Authentication](https://www.flickr.com/services/api/auth.oauth.html)
+- [User Authentication](https://www.flickr.com/services/api/auth.oauth.html)
 - [ユーザー認証](http://westplain.sakuraweb.com/translate/flickr/read/UserAuthentication.cgi)
 
-- [Flickr Services | Uploading Photos](https://www.flickr.com/services/api/upload.api.html)
-- [Flickr Services | upload.example](https://www.flickr.com/services/api/upload.example.html)
-- [Flickr Services | flickr.photosets.addPhoto](https://www.flickr.com/services/api/flickr.photosets.addPhoto.html)
+- [Uploading Photos](https://www.flickr.com/services/api/upload.api.html)
+- [upload.example](https://www.flickr.com/services/api/upload.example.html)
+- [flickr.photosets.addPhoto](https://www.flickr.com/services/api/flickr.photosets.addPhoto.html)
