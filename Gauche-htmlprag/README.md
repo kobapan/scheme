@@ -67,11 +67,11 @@ No inter-tag whitespace or line breaks not explicit in shtml is emitted. The sht
 ### (shtml->html shtml)
 Yields an HTML encoding of SHTML shtml as a string
 
-  (shtml->html
-    '((html (head (title "My Title"))
-            (body (@ (bgcolor "white"))
-                  (h1 "My Heading")
-                  (p "This is a paragraph.")
-                  (p "This is another paragraph.")))))
+    (shtml->html
+      '((html (head (title "My Title"))
+              (body (@ (bgcolor "white"))
+                    (h1 "My Heading")
+                    (p "This is a paragraph.")
+                    (p "This is another paragraph.")))))
     ==>
-   "<html><head><title>My Title</title></head><body bgcolor=\"white\"><h1>My Heading</h1><p>This is a paragraph.</p><p>This is another paragraph.</p></body></html>"
+    "<html><head><title>My Title</title></head><body bgcolor=\"white\"><h1>My Heading</h1><p>This is a paragraph.</p><p>This is another paragraph.</p></body></html>"
