@@ -1,106 +1,67 @@
-(use srfi-13)
-;;; @Package     HtmlPrag
-;;; @Subtitle    Pragmatic Parsing and Emitting of HTML using SXML and SHTML
-;;; @HomePage    http://www.neilvandyke.org/htmlprag/
-;;; @Author      Neil Van Dyke
-;;; @Version     0.20
-;;; @Date        2011-08-22
-;;; @PLaneT      neil/htmlprag:1:=7
+;; htmlprag.scm
+;; Pragmatic Parsing and Emitting of HTML using SXML and SHTML
+;; based on htmlprag.rkt (htmlprag-0.20) http://planet.racket-lang.org/package-source/neil/htmlprag.plt/1/7/htmlprag.rkt
 
-;; $Id: htmlprag.rkt,v 1.414 2011/08/22 07:55:22 neilpair Exp $
+(define-module htmlprag
+  (use srfi-13)
+  (export
+   ;; Tokenizing
+   make-html-tokenizer tokenize-html
+   ;; Parsing
+   html->shtml html->sxml
+   ;; Emitting HTML
+   write-shtml-as-html shtml->html))
+(select-module htmlprag)
 
-;;; @legal
-;;; Copyright @copyright{} 2003 -- 2011 Neil Van Dyke.  This program is
-;;; Software; you can redistribute it and/or modify it under the terms of the
-;;; GNU Lesser General Public License as published by the Free Software
-;;; Foundation; either version 3 of the License (LGPL 3), or (at your option)
-;;; any later version.  This program is distributed in the hope that it will be
-;;; useful, but without any warranty; without even the implied warranty of
-;;; merchantability or fitness for a particular purpose.  See
-;;; @indicateurl{http://www.gnu.org/licenses/} for details.  For other licenses
-;;; and consulting, please contact the author.
-;;; @end legal
-
-;;; @section Introduction
-
-;;; @i{Note: This package has been obsoleted by newer
-;;; @uref{http://www.neilvandyke.org/racket-xexp/, SXML/@i{xexp}} tools of the
-;;; author.}
-;;;
-;;; HtmlPrag provides permissive HTML parsing and emitting capability to Scheme
-;;; programs.  The parser is useful for software agent extraction of
-;;; information from Web pages, for programmatically transforming HTML files,
-;;; and for implementing interactive Web browsers.  HtmlPrag emits ``SHTML,''
-;;; which is an encoding of HTML in
-;;; @uref{http://pobox.com/~oleg/ftp/Scheme/SXML.html, SXML}, so that
-;;; conventional HTML may be processed with XML tools such as
-;;; @uref{http://pair.com/lisovsky/query/sxpath/, SXPath}.  Like Oleg
-;;; Kiselyov's @uref{http://pobox.com/~oleg/ftp/Scheme/xml.html#HTML-parser,
-;;; SSAX-based HTML parser}, HtmlPrag provides a permissive tokenizer, but also
-;;; attempts to recover structure.  HtmlPrag also includes procedures for
-;;; encoding SHTML in HTML syntax.
-;;;
-;;; The HtmlPrag parsing behavior is permissive in that it accepts erroneous
-;;; HTML, handling several classes of HTML syntax errors gracefully, without
-;;; yielding a parse error.  This is crucial for parsing arbitrary real-world
-;;; Web pages, since many pages actually contain syntax errors that would
-;;; defeat a strict or validating parser.  HtmlPrag's handling of errors is
-;;; intended to generally emulate popular Web browsers' interpretation of the
-;;; structure of erroneous HTML.  We euphemistically term this kind of parse
-;;; ``pragmatic.''
-;;;
-;;; HtmlPrag also has some support for XHTML, although XML namespace qualifiers
-;;; are currently accepted but stripped from the resulting SHTML.  Note that
-;;; valid XHTML input is of course better handled by a strict XML parser.
-;;;
-;;; HtmlPrag requires R5RS, SRFI-6, and SRFI-23.  This version of HtmlPrag is
-;;; specific to PLT Scheme, due to a transition period in how portability is
-;;; handled, but the exceedingly portable version 0.16 is available at:
-;;; @uref{http://www.neilvandyke.org/htmlprag/htmlprag-0-16.scm}
+;; HtmlPrag provides permissive HTML parsing and emitting capability to Scheme
+;; programs.  The parser is useful for software agent extraction of
+;; information from Web pages, for programmatically transforming HTML files,
+;; and for implementing interactive Web browsers.  HtmlPrag emits ``SHTML,''
+;; which is an encoding of HTML in SXML, so that conventional HTML may be
+;; processed with XML tools such as SXPath. HtmlPrag provides a permissive
+;; tokenizer, but also attempts to recover structure.  HtmlPrag also includes
+;; procedures for encoding SHTML in HTML syntax.
+;;
+;; The HtmlPrag parsing behavior is permissive in that it accepts erroneous
+;; HTML, handling several classes of HTML syntax errors gracefully, without
+;; yielding a parse error.  This is crucial for parsing arbitrary real-world
+;; Web pages, since many pages actually contain syntax errors that would
+;; defeat a strict or validating parser.  HtmlPrag's handling of errors is
+;; intended to generally emulate popular Web browsers' interpretation of the
+;; structure of erroneous HTML.  We euphemistically term this kind of parse
+;; ``pragmatic.''
+;;
+;; HtmlPrag also has some support for XHTML, although XML namespace qualifiers
+;; are currently accepted but stripped from the resulting SHTML.  Note that
+;; valid XHTML input is of course better handled by a strict XML parser.
 
 (define (%gosc os)
   (begin0 (get-output-string os)
     (close-output-port os)))
 
-;;; @section SHTML and SXML
+;; @section SHTML and SXML
 
-;;; SHTML is a variant of SXML, with two minor but useful extensions:
-;;;
-;;; @itemize
-;;;
-;;; @item
-;;; The SXML keyword symbols, such as @code{*TOP*}, are defined to be in all
-;;; uppercase, regardless of the case-sensitivity of the reader of the hosting
-;;; Scheme implementation in any context.  This avoids several pitfalls.
-;;;
-;;; @item
-;;; Since not all character entity references used in HTML can be converted to
-;;; Scheme characters in all R5RS Scheme implementations, nor represented in
-;;; conventional text files or other common external text formats to which one
-;;; might wish to write SHTML, SHTML adds a special @code{&} syntax for
-;;; non-ASCII (or non-Extended-ASCII) characters.  The syntax is @code{(&
-;;; @var{val})}, where @var{val} is a symbol or string naming with the symbolic
-;;; name of the character, or an integer with the numeric value of the
-;;; character.
-;;;
-;;; @end itemize
+;; SHTML is a variant of SXML, with two minor but useful extensions:
+;;
+;; The SXML keyword symbols, such as *TOP*, are defined to be in all
+;; uppercase, regardless of the case-sensitivity of the reader of the hosting
+;; Scheme implementation in any context.  This avoids several pitfalls.
+;;
+;; Since not all character entity references used in HTML can be converted to
+;; Scheme characters in all R5RS Scheme implementations, nor represented in
+;; conventional text files or other common external text formats to which one
+;; might wish to write SHTML, SHTML adds a special & syntax for
+;; non-ASCII (or non-Extended-ASCII) characters.  The syntax is
+;; (& val), where val is a symbol or string naming with the symbolic
+;; name of the character, or an integer with the numeric value of the
+;; character.
+;;
 
-;;; @defvar  shtml-comment-symbol
-;;; @defvarx shtml-decl-symbol
-;;; @defvarx shtml-empty-symbol
-;;; @defvarx shtml-end-symbol
-;;; @defvarx shtml-entity-symbol
-;;; @defvarx shtml-pi-symbol
-;;; @defvarx shtml-start-symbol
-;;; @defvarx shtml-text-symbol
-;;; @defvarx shtml-top-symbol
-;;;
-;;; These variables are bound to the following case-sensitive symbols used in
-;;; SHTML, respectively: @code{*COMMENT*}, @code{*DECL*}, @code{*EMPTY*},
-;;; @code{*END*}, @code{*ENTITY*}, @code{*PI*}, @code{*START*}, @code{*TEXT*},
-;;; and @code{*TOP*}.  These can be used in lieu of the literal symbols in
-;;; programs read by a case-insensitive Scheme reader.
-
+;; These variables are bound to the following case-sensitive symbols used in
+;; SHTML, respectively: *COMMENT*, *DECL*, *EMPTY*,
+;; *END*, *ENTITY*, *PI*, *START*, *TEXT*,
+;; and *TOP*.  These can be used in lieu of the literal symbols in
+;; programs read by a case-insensitive Scheme reader.
 (define shtml-comment-symbol (string->symbol "*COMMENT*"))
 (define shtml-decl-symbol    (string->symbol "*DECL*"))
 (define shtml-empty-symbol   (string->symbol "*EMPTY*"))
@@ -111,26 +72,18 @@
 (define shtml-text-symbol    (string->symbol "*TEXT*"))
 (define shtml-top-symbol     (string->symbol "*TOP*"))
 
-;;; @defvar  shtml-named-char-id
-;;; @defvarx shtml-numeric-char-id
-;;;
-;;; These variables are bound to the SHTML entity public identifier strings
-;;; used in SHTML @code{*ENTITY*} named and numeric character entity
-;;; references.
-
+;; These variables are bound to the SHTML entity public identifier strings
+;; used in SHTML *ENTITY* named and numeric character entity
+;; references.
 (define shtml-named-char-id   "shtml-named-char")
 (define shtml-numeric-char-id "shtml-numeric-char")
 
-;;; @defproc make-shtml-entity val
-;;;
-;;; Yields an SHTML character entity reference for @var{val}.  For example:
-;;;
-;;; @lisp
-;;; (make-shtml-entity "rArr")                  @result{} (& rArr)
-;;; (make-shtml-entity (string->symbol "rArr")) @result{} (& rArr)
-;;; (make-shtml-entity 151)                     @result{} (& 151)
-;;; @end lisp
-
+;; Yields an SHTML character entity reference for val.  For example:
+;;
+;; (make-shtml-entity "rArr")                  ==> (& rArr)
+;; (make-shtml-entity (string->symbol "rArr")) ==> (& rArr)
+;; (make-shtml-entity 151)                     ==> (& 151)
+;;
 (define (make-shtml-entity val)
   (list '& (cond ((symbol?  val) val)
                  ((integer? val) val)
@@ -144,19 +97,15 @@
 ;; (define (shtml-entity? x)
 ;;   (and (shtml-entity-value entity) #t))
 
-;;; @defproc shtml-entity-value obj
-;;;
-;;; Yields the value for the SHTML entity @var{obj}, or @code{#f} if @var{obj}
-;;; is not a recognized entity.  Values of named entities are symbols, and
-;;; values of numeric entities are numbers.  An error may raised if @var{obj}
-;;; is an entity with system ID inconsistent with its public ID.  For example:
-;;;
-;;; @lisp
-;;; (define (f s) (shtml-entity-value (cadr (html->shtml s))))
-;;; (f "&nbsp;")  @result{} nbsp
-;;; (f "&#2000;") @result{} 2000
-;;; @end lisp
-
+;; Yields the value for the SHTML entity obj, or #f if obj
+;; is not a recognized entity.  Values of named entities are symbols, and
+;; values of numeric entities are numbers.  An error may raised if obj
+;; is an entity with system ID inconsistent with its public ID.  For example:
+;;
+;; (define (f s) (shtml-entity-value (cadr (html->shtml s))))
+;; (f "&nbsp;")  ==> nbsp
+;; (f "&#2000;") ==> 2000
+;;
 (define (shtml-entity-value entity)
   (cond ((not (pair? entity)) #f)
         ((null? (cdr entity)) #f)
@@ -180,31 +129,29 @@
                      (else #f)))))
         (else #f)))
 
-;;; @section Tokenizing
+;; @section Tokenizing
 
-;;; The tokenizer is used by the higher-level structural parser, but can also
-;;; be called directly for debugging purposes or unusual applications.  Some of
-;;; the list structure of tokens, such as for start tag tokens, is mutated and
-;;; incorporated into the SHTML list structure emitted by the parser.
+;; The tokenizer is used by the higher-level structural parser, but can also
+;; be called directly for debugging purposes or unusual applications.  Some of
+;; the list structure of tokens, such as for start tag tokens, is mutated and
+;; incorporated into the SHTML list structure emitted by the parser.
 
-;;; @defproc make-html-tokenizer in normalized?
-;;;
-;;; Constructs an HTML tokenizer procedure on input port @var{in}.  If boolean
-;;; @var{normalized?} is true, then tokens will be in a format conducive to use
-;;; with a parser emitting normalized SXML.  Each call to the resulting
-;;; procedure yields a successive token from the input.  When the tokens have
-;;; been exhausted, the procedure returns the null list.  For example:
-;;;
-;;; @lisp
-;;; (define input (open-input-string "<a href=\"foo\">bar</a>"))
-;;; (define next  (make-html-tokenizer input #f))
-;;; (next) @result{} (a (@@ (href "foo")))
-;;; (next) @result{} "bar"
-;;; (next) @result{} (*END* a)
-;;; (next) @result{} ()
-;;; (next) @result{} ()
-;;; @end lisp
-
+;; (make-html-tokenizer in normalized?)
+;;
+;; Constructs an HTML tokenizer procedure on input port in.  If boolean
+;; normalized? is true, then tokens will be in a format conducive to use
+;; with a parser emitting normalized SXML.  Each call to the resulting
+;; procedure yields a successive token from the input.  When the tokens have
+;; been exhausted, the procedure returns the null list.  For example:
+;;
+;; (define input (open-input-string "<a href=\"foo\">bar</a>"))
+;; (define next  (make-html-tokenizer input #f))
+;; (next) ==> (a (@ (href "foo")))
+;; (next) ==> "bar"
+;; (next) ==> (*END* a)
+;; (next) ==> ()
+;; (next) ==> ()
+;;
 (define make-html-tokenizer
   ;; TODO: Have the tokenizer replace contiguous whitespace within individual
   ;; text tokens with single space characters (except for when in `pre' and
@@ -934,17 +881,16 @@
         (set! nexttok normal-nexttok)
         (lambda () (nexttok))))))
 
-;;; @defproc tokenize-html in normalized?
-;;;
-;;; Returns a list of tokens from input port @var{in}, normalizing according to
-;;; boolean @var{normalized?}.  This is probably most useful as a debugging
-;;; convenience.  For example:
-;;;
-;;; @lisp
-;;; (tokenize-html (open-input-string "<a href=\"foo\">bar</a>") #f)
-;;; @result{} ((a (@@ (href "foo"))) "bar" (*END* a))
-;;; @end lisp
-
+;; (tokenize-html in normalized?)
+;;
+;; Returns a list of tokens from input port in, normalizing according to
+;; boolean normalized?.  This is probably most useful as a debugging
+;; convenience.  For example:
+;;
+;; (tokenize-html (open-input-string "<a href=\"foo\">bar</a>") #f)
+;;
+;; ==> ((a (|@| (href "foo"))) "bar" (*END* a))
+;;
 (define (tokenize-html in normalized?)
   (let ((next-tok (make-html-tokenizer in normalized?)))
     (let loop ((tok (next-tok)))
@@ -952,19 +898,16 @@
           '()
           (cons tok (loop (next-tok)))))))
 
-;;; @defproc shtml-token-kind token
-;;;
-;;; Returns a symbol indicating the kind of tokenizer @var{token}:
-;;; @code{*COMMENT*}, @code{*DECL*}, @code{*EMPTY*}, @code{*END*},
-;;; @code{*ENTITY*}, @code{*PI*}, @code{*START*}, @code{*TEXT*}.
-;;; This is used by higher-level parsing code.  For example:
-;;;
-;;; @lisp
-;;; (map shtml-token-kind
-;;;      (tokenize-html (open-input-string "<a<b>><c</</c") #f))
-;;; @result{} (*START* *START* *TEXT* *START* *END* *END*)
-;;; @end lisp
-
+;; Returns a symbol indicating the kind of tokenizer token:
+;; *COMMENT*, *DECL*, *EMPTY*, *END*,
+;; *ENTITY*, *PI*, *START*, *TEXT*.
+;; This is used by higher-level parsing code.  For example:
+;;
+;; (map shtml-token-kind
+;;      (tokenize-html (open-input-string "<a<b>><c</</c") #f))
+;;
+;; ==> (*START* *START* *TEXT* *START* *END* *END*)
+;;
 (define (shtml-token-kind token)
   (cond ((string? token) shtml-text-symbol)
         ((list?   token)
@@ -981,31 +924,26 @@
                      "unrecognized token kind: ~S"
                      token))))
 
-;;; @section Parsing
+;; @section Parsing
 
-;;; Most applications will call a parser procedure such as
-;;; @code{html->shtml} rather than calling the tokenizer directly.
+;; Most applications will call a parser procedure such as
+;; html->shtml rather than calling the tokenizer directly.
 
-;; @defvar %empty-elements
-;;
 ;; List of names of HTML element types that have no content, represented as a
 ;; list of symbols.  This is used internally by the parser and encoder.  The
 ;; effect of mutating this list is undefined.
-
+;;
 ;; TODO: Document exactly which elements these are, after we make the new
 ;; parameterized parser constructor.
-
+;;
 (define %empty-elements
   '(& area base br frame hr img input isindex keygen link meta object param
       spacer wbr))
 
-;;; @defproc parse-html/tokenizer tokenizer normalized?
-;;;
-;;; Emits a parse tree like @code{html->shtml} and related procedures, except
-;;; using @var{tokenizer} as a source of tokens, rather than tokenizing from an
-;;; input port.  This procedure is used internally, and generally should not be
-;;; called directly.
-
+;; Emits a parse tree like html->shtml and related procedures, except
+;; using tokenizer as a source of tokens, rather than tokenizing from an
+;; input port.  This procedure is used internally, and generally should not be
+;; called directly.
 (define parse-html/tokenizer
   ;; Note: This algorithm was originally written in 2001 (as part of the first
   ;; Scheme library the author ever wrote), and then on 2009-08-16 was revamped
@@ -1190,12 +1128,9 @@
 ;; >Would adding "page" to the above line of the HtmlPrag source code work
 ;; >around the current problem, or do you need a better solution right now?
 
-;; @defproc %parse-html input normalized? top?
-;;
-;; This procedure is now used internally by @code{html->shtml} and its
+;; This procedure is now used internally by html->shtml and its
 ;; variants, and should not be used directly by programs.  The interface is
 ;; likely to change in future versions of HtmlPrag.
-
 (define (%parse-html input normalized? top?)
   (let ((parse
          (lambda ()
@@ -1212,50 +1147,44 @@
         (cons shtml-top-symbol (parse))
         (parse))))
 
-;;; @defproc  html->sxml-0nf input
-;;; @defprocx html->sxml-1nf input
-;;; @defprocx html->sxml-2nf input
-;;; @defprocx html->sxml     input
-;;; @defprocx html->shtml    input
-;;;
-;;; Permissively parse HTML from @var{input}, which is either an input port or
-;;; a string, and emit an SHTML equivalent or approximation.  To borrow and
-;;; slightly modify an example from Kiselyov's discussion of his HTML parser:
-;;;
-;;; @lisp
-;;; (html->shtml
-;;;  "<html><head><title></title><title>whatever</title></head><body>
-;;; <a href=\"url\">link</a><p align=center><ul compact style=\"aa\">
-;;; <p>BLah<!-- comment <comment> --> <i> italic <b> bold <tt> ened</i>
-;;; still &lt; bold </b></body><P> But not done yet...")
-;;; @result{}
-;;; (*TOP* (html (head (title) (title "whatever"))
-;;;              (body "\n"
-;;;                    (a (@@ (href "url")) "link")
-;;;                    (p (@@ (align "center"))
-;;;                       (ul (@@ (compact) (style "aa")) "\n"))
-;;;                    (p "BLah"
-;;;                       (*COMMENT* " comment <comment> ")
-;;;                       " "
-;;;                       (i " italic " (b " bold " (tt " ened")))
-;;;                       "\n"
-;;;                       "still < bold "))
-;;;              (p " But not done yet...")))
-;;; @end lisp
-;;;
-;;; Note that in the emitted SHTML the text token @code{"still < bold"} is
-;;; @emph{not} inside the @code{b} element, which represents an unfortunate
-;;; failure to emulate all the quirks-handling behavior of some popular Web
-;;; browsers.
-;;;
-;;; The procedures @code{html->sxml-@var{n}nf} for @var{n} 0 through 2
-;;; correspond to 0th through 2nd normal forms of SXML as specified in SXML,
-;;; and indicate the minimal requirements of the emitted SXML.
-;;;
-;;; @code{html->sxml} and @code{html->shtml} are currently aliases for
-;;; @code{html->sxml-0nf}, and can be used in scripts and interactively, when
-;;; terseness is important and any normal form of SXML would suffice.
-
+;; Permissively parse HTML from input, which is either an input port or
+;; a string, and emit an SHTML equivalent or approximation.  To borrow and
+;; slightly modify an example from Kiselyov's discussion of his HTML parser:
+;;
+;; (html->shtml
+;;  "<html><head><title></title><title>whatever</title></head><body>
+;; <a href=\"url\">link</a><p align=center><ul compact style=\"aa\">
+;; <p>BLah<!-- comment <comment> --> <i> italic <b> bold <tt> ened</i>
+;; still &lt; bold </b></body><P> But not done yet...")
+;;
+;; ==>
+;;
+;; (*TOP* (html (head (title) (title "whatever"))
+;;              (body "\n"
+;;                    (a (@@ (href "url")) "link")
+;;                    (p (@@ (align "center"))
+;;                       (ul (@@ (compact) (style "aa")) "\n"))
+;;                    (p "BLah"
+;;                       (*COMMENT* " comment <comment> ")
+;;                       " "
+;;                       (i " italic " (b " bold " (tt " ened")))
+;;                       "\n"
+;;                       "still < bold "))
+;;              (p " But not done yet...")))
+;;
+;;
+;; Note that in the emitted SHTML the text token "still < bold" is
+;; not inside the b element, which represents an unfortunate
+;; failure to emulate all the quirks-handling behavior of some popular Web
+;; browsers.
+;;
+;; The procedures html->sxml-nnf for n 0 through 2
+;; correspond to 0th through 2nd normal forms of SXML as specified in SXML,
+;; and indicate the minimal requirements of the emitted SXML.
+;;
+;; html->sxml and html->shtml are currently aliases for
+;; html->sxml-0nf, and can be used in scripts and interactively, when
+;; terseness is important and any normal form of SXML would suffice.
 (define (html->sxml-0nf input) (%parse-html input #f #t))
 (define (html->sxml-1nf input) (%parse-html input #f #t))
 (define (html->sxml-2nf input) (%parse-html input #t #t))
@@ -1263,13 +1192,12 @@
 (define html->sxml  html->sxml-0nf)
 (define html->shtml html->sxml-0nf)
 
-;;; @section Emitting HTML
+;; @section Emitting HTML
 
-;;; Two procedures encoding the SHTML representation as conventional HTML,
-;;; @code{write-shtml-as-html} and @code{shtml->html}.  These are perhaps most
-;;; useful for emitting the result of parsed and transformed input HTML.  They
-;;; can also be used for emitting HTML from generated or handwritten SHTML.
-
+;; Two procedures encoding the SHTML representation as conventional HTML,
+;; write-shtml-as-html and shtml->html.  These are perhaps most
+;; useful for emitting the result of parsed and transformed input HTML.  They
+;; can also be used for emitting HTML from generated or handwritten SHTML.
 (define (%write-shtml-as-html/fixed shtml out foreign-filter)
   (letrec
       ((write-shtml-text
@@ -1510,40 +1438,34 @@
                  (loop (+ 1 i)))
           #f))))
 
-;;; @defproc write-shtml-as-html shtml [out [foreign-filter]]
-;;;
-;;; Writes a conventional HTML transliteration of the SHTML @var{shtml} to
-;;; output port @var{out}.  If @var{out} is not specified, the default is the
-;;; current output port.  HTML elements of types that are always empty are
-;;; written using HTML4-compatible XHTML tag syntax.
-;;;
-;;; If @var{foreign-filter} is specified, it is a procedure of two argument
-;;; that is applied to any non-SHTML (``foreign'') object encountered in
-;;; @var{shtml}, and should yield SHTML.  The first argument is the object, and
-;;; the second argument is a boolean for whether or not the object is part of
-;;; an attribute value.
-;;;
-;;; No inter-tag whitespace or line breaks not explicit in @var{shtml} is
-;;; emitted.  The @var{shtml} should normally include a newline at the end of
-;;; the document.  For example:
-;;;
-;;; @lisp
-;;; (write-shtml-as-html
-;;;  '((html (head (title "My Title"))
-;;;          (body (@@ (bgcolor "white"))
-;;;                (h1 "My Heading")
-;;;                (p "This is a paragraph.")
-;;;                (p "This is another paragraph.")))))
-;;; @end lisp
-;;;
-;;; outputs:
-;;;
-;;; @example
-;;; <html><head><title>My Title</title></head><body bgcolor="whi
-;;; te"><h1>My Heading</h1><p>This is a paragraph.</p><p>This is
-;;;  another paragraph.</p></body></html>
-;;; @end example
-
+;; Writes a conventional HTML transliteration of the SHTML to
+;; output port out.  If out is not specified, the default is the
+;; current output port.  HTML elements of types that are always empty are
+;; written using HTML4-compatible XHTML tag syntax.
+;;
+;; If foreign-filter is specified, it is a procedure of two argument
+;; that is applied to any non-SHTML (``foreign'') object encountered in
+;; shtml, and should yield SHTML.  The first argument is the object, and
+;; the second argument is a boolean for whether or not the object is part of
+;; an attribute value.
+;;
+;; No inter-tag whitespace or line breaks not explicit in shtml is
+;; emitted.  The shtml should normally include a newline at the end of
+;; the document.  For example:
+;;
+;; (write-shtml-as-html
+;;  '((html (head (title "My Title"))
+;;          (body (@@ (bgcolor "white"))
+;;                (h1 "My Heading")
+;;                (p "This is a paragraph.")
+;;                (p "This is another paragraph.")))))
+;;
+;; ==>
+;;
+;; <html><head><title>My Title</title></head><body bgcolor="whi
+;; te"><h1>My Heading</h1><p>This is a paragraph.</p><p>This is
+;;  another paragraph.</p></body></html>
+;;
 (define write-shtml-as-html
   (letrec ((error-foreign-filter
             (lambda (foreign-object in-attribute-value?)
@@ -1567,193 +1489,24 @@
                      "extraneous arguments: ~S"
                      (cddr rest)))))))
 
-;;; @defproc shtml->html shtml
-;;;
-;;; Yields an HTML encoding of SHTML @var{shtml} as a string.  For example:
-;;;
-;;; @lisp
-;;; (shtml->html
-;;;  (html->shtml
-;;;   "<P>This is<br<b<I>bold </foo>italic</ b > text.</p>"))
-;;; @result{} "<p>This is<br /><b><i>bold italic</i></b> text.</p>"
-;;; @end lisp
-;;;
-;;; Note that, since this procedure constructs a string, it should normally
-;;; only be used when the HTML is relatively small.  When encoding HTML
-;;; documents of conventional size and larger, @code{write-shtml-as-html} is
-;;; much more efficient.
-
+;; Yields an HTML encoding of SHTML shtml as a string.  For example:
+;;
+;; (shtml->html
+;;  (html->shtml
+;;   "<P>This is<br<b<I>bold </foo>italic</ b > text.</p>"))
+;;
+;; ==>
+;;
+;; "<p>This is<br /><b><i>bold italic</i></b> text.</p>"
+;;
+;; Note that, since this procedure constructs a string, it should normally
+;; only be used when the HTML is relatively small.  When encoding HTML
+;; documents of conventional size and larger, write-shtml-as-html is
+;; much more efficient.
 (define (shtml->html shtml)
   (let ((os (open-output-string)))
     (write-shtml-as-html shtml os)
     (%gosc os)))
 
-;;; @unnumberedsec History
 
-;;; @table @asis
-;;;
-;;; @item Version 0.20 --- 2011-08-22 --- PLaneT @code{(1 7)}
-;;; Document that HtmlPrag has been obsoleted.
-;;;
-;;; @item Version 0.19 --- 2009-11-08 --- PLaneT @code{(1 6)}
-;;; Whitespace after a @code{<} in a context that would otherwise start a tag
-;;; is no longer considered the start of a tag.  This behavior is consistent
-;;; with, e.g., Firefox 3, and we have found a major site relying on it.  Three
-;;; regression tests were changed to match the new desired behavior.
-;;;
-;;; @item Version 0.18 --- 2009-11-07 --- PLaneT @code{(1 5)}
-;;; The @code{p} element can be a child of the @code{li} element.
-;;;
-;;; @item Version 0.17 --- 2009-08-16 --- PLaneT @code{(1 4)}
-;;; License is now LGPL3.  Converted to author's new Scheme management system.
-;;; Revamped high-level parser to not use mutable pairs, for PLT Scheme 4.x
-;;; compatibility.  Until the new portability mechanism is in place, the
-;;; previous portable version of HtmlPrag is available at:
-;;; @uref{http://www.neilvandyke.org/htmlprag/htmlprag-0-16.scm}
-;;;
-;;; @item Version 0.16 --- 2005-12-18
-;;; Documentation fix.
-;;;
-;;; @item Version 0.15 --- 2005-12-18
-;;; In the HTML parent element constraints that are used for structure
-;;; recovery, @code{div} is now always permitted as a parent, as a stopgap
-;;; measure until substantial time can be spent reworking the algorithm to
-;;; better support @code{div} (bug reported by Corey Sweeney and Jepri).  Also
-;;; no longer convert to Scheme character any HTML numeric character reference
-;;; with value above 126, to avoid Unicode problem with PLT 299/300 (bug
-;;; reported by Corey Sweeney).
-;;;
-;;; @item Version 0.14 --- 2005-06-16
-;;; XML CDATA sections are now tokenized.  Thanks to Alejandro Forero Cuervo
-;;; for suggesting this feature.  The deprecated procedures @code{sxml->html}
-;;; and @code{write-sxml-html} have been removed.  Minor documentation changes.
-;;;
-;;; @item Version 0.13 --- 2005-02-23
-;;; HtmlPrag now requires @code{syntax-rules}, and a reader that can read the
-;;; at-sign character as a symbol.  SHTML now has a special @code{&} element
-;;; for character entities, and it is emitted by the parser rather than the old
-;;; @code{*ENTITY*} kludge.  @code{shtml-entity-value} supports both the new
-;;; and the old character entity representations.  @code{shtml-entity-value}
-;;; now yields @code{#f} on invalid SHTML entity, rather than raising an error.
-;;; @code{write-shtml-as-html} now has a third argument, @code{foreign-filter}.
-;;; @code{write-shtml-as-html} now emits SHTML @code{&} entity references.
-;;; Changed @code{shtml-named-char-id} and @code{shtml-numeric-char-id}, as
-;;; previously warned.  Testeez is now used for the test suite.  Test procedure
-;;; is now the internal @code{%htmlprag:test}.  Documentation changes.
-;;; Notably, much documentation about using HtmlPrag under various particular
-;;; Scheme implementations has been removed.
-;;;
-;;; @item Version 0.12 --- 2004-07-12
-;;; Forward-slash in an unquoted attribute value is now considered a value
-;;; constituent rather than an unconsumed terminator of the value (thanks to
-;;; Maurice Davis for reporting and a suggested fix).  @code{xml:} is now
-;;; preserved as a namespace qualifier (thanks to Peter Barabas for
-;;; reporting).  Output port term of @code{write-shtml-as-html} is now
-;;; optional.  Began documenting loading for particular implementation-specific
-;;; packagings.
-;;;
-;;; @item Version 0.11 --- 2004-05-13
-;;; To reduce likely namespace collisions with SXML tools, and in anticipation
-;;; of a forthcoming set of new features, introduced the concept of ``SHTML,''
-;;; which will be elaborated upon in a future version of HtmlPrag.  Renamed
-;;; @code{sxml-@var{x}-symbol} to @code{shtml-@var{x}-symbol},
-;;; @code{sxml-html-@var{x}} to @code{shtml-@var{x}}, and
-;;; @code{sxml-token-kind} to @code{shtml-token-kind}.  @code{html->shtml},
-;;; @code{shtml->html}, and @code{write-shtml-as-html} have been added as
-;;; names.  Considered deprecated but still defined (see the ``Deprecated''
-;;; section of this documentation) are @code{sxml->html} and
-;;; @code{write-sxml-html}.  The growing pains should now be all but over.
-;;; Internally, @code{htmlprag-internal:error} introduced for Bigloo
-;;; portability.  SISC returned to the test list; thanks to Scott G.  Miller
-;;; for his help.  Fixed a new character @code{eq?}  bug, thanks to SISC.
-;;;
-;;; @item Version 0.10 --- 2004-05-11
-;;; All public identifiers have been renamed to drop the ``@code{htmlprag:}''
-;;; prefix.  The portability identifiers have been renamed to begin with an
-;;; @code{htmlprag-internal:} prefix, are now considered strictly
-;;; internal-use-only, and have otherwise been changed.  @code{parse-html} and
-;;; @code{always-empty-html-elements} are no longer public.
-;;; @code{test-htmlprag} now tests @code{html->sxml} rather than
-;;; @code{parse-html}.  SISC temporarily removed from the test list, until an
-;;; open source Java that works correctly is found.
-;;;
-;;; @item Version 0.9 --- 2004-05-07
-;;; HTML encoding procedures added.  Added
-;;; @code{htmlprag:sxml-html-entity-value}.  Upper-case @code{X} in hexadecimal
-;;; character entities is now parsed, in addition to lower-case @code{x}.
-;;; Added @code{htmlprag:always-empty-html-elements}.  Added additional
-;;; portability bindings.  Added more test cases.
-;;;
-;;; @item Version 0.8 --- 2004-04-27
-;;; Entity references (symbolic, decimal numeric, hexadecimal numeric) are now
-;;; parsed into @code{*ENTITY*} SXML.  SXML symbols like @code{*TOP*} are now
-;;; always upper-case, regardless of the Scheme implementation.  Identifiers
-;;; such as @code{htmlprag:sxml-top-symbol} are bound to the upper-case
-;;; symbols.  Procedures @code{htmlprag:html->sxml-0nf},
-;;; @code{htmlprag:html->sxml-1nf}, and @code{htmlprag:html->sxml-2nf} have
-;;; been added.  @code{htmlprag:html->sxml} now an alias for
-;;; @code{htmlprag:html->sxml-0nf}.  @code{htmlprag:parse} has been refashioned
-;;; as @code{htmlprag:parse-html} and should no longer be directly.  A number
-;;; of identifiers have been renamed to be more appropriate when the
-;;; @code{htmlprag:} prefix is dropped in some implementation-specific
-;;; packagings of HtmlPrag: @code{htmlprag:make-tokenizer} to
-;;; @code{htmlprag:make-html-tokenizer}, @code{htmlprag:parse/tokenizer} to
-;;; @code{htmlprag:parse-html/tokenizer}, @code{htmlprag:html->token-list} to
-;;; @code{htmlprag:tokenize-html}, @code{htmlprag:token-kind} to
-;;; @code{htmlprag:sxml-token-kind}, and @code{htmlprag:test} to
-;;; @code{htmlprag:test-htmlprag}.  Verbatim elements with empty-element tag
-;;; syntax are handled correctly.  New versions of Bigloo and RScheme tested.
-;;;
-;;; @item Version 0.7 --- 2004-03-10
-;;; Verbatim pair elements like @code{script} and @code{xmp} are now parsed
-;;; correctly.  Two Scheme implementations have temporarily been dropped from
-;;; regression testing: Kawa, due to a Java bytecode verifier error likely due
-;;; to a Java installation problem on the test machine; and SXM 1.1, due to
-;;; hitting a limit on the number of literals late in the test suite code.
-;;; Tested newer versions of Bigloo, Chicken, Gauche, Guile, MIT Scheme, PLT
-;;; MzScheme, RScheme, SISC, and STklos.  RScheme no longer requires the
-;;; ``@code{(define get-output-string close-output-port)}'' workaround.
-;;;
-;;; @item Version 0.6 --- 2003-07-03
-;;; Fixed uses of @code{eq?} in character comparisons, thanks to Scott G.
-;;; Miller.  Added @code{htmlprag:html->normalized-sxml} and
-;;; @code{htmlprag:html->nonnormalized-sxml}.  Started to add
-;;; @code{close-output-port} to uses of output strings, then reverted due to
-;;; bug in one of the supported dialects.  Tested newer versions of Bigloo,
-;;; Gauche, PLT MzScheme, RScheme.
-;;;
-;;; @item Version 0.5 --- 2003-02-26
-;;; Removed uses of @code{call-with-values}.  Re-ordered top-level definitions,
-;;; for portability.  Now tests under Kawa 1.6.99, RScheme 0.7.3.2, Scheme 48
-;;; 0.57, SISC 1.7.4, STklos 0.54, and SXM 1.1.
-;;;
-;;; @item Version 0.4 --- 2003-02-19
-;;; Apostrophe-quoted element attribute values are now handled.  A bug that
-;;; incorrectly assumed left-to-right term evaluation order has been fixed
-;;; (thanks to MIT Scheme for confronting us with this).  Now also tests OK
-;;; under Gauche 0.6.6 and MIT Scheme 7.7.1.  Portability improvement for
-;;; implementations (e.g., RScheme 0.7.3.2.b6, Stalin 0.9) that cannot read the
-;;; at-sign character as a symbol (although those implementations tend to
-;;; present other portability issues, as yet unresolved).
-;;;
-;;; @item Version 0.3 --- 2003-02-05
-;;; A test suite with 66 cases has been added, and necessary changes have been
-;;; made for the suite to pass on five popular Scheme implementations.  XML
-;;; processing instructions are now parsed.  Parent constraints have been added
-;;; for @code{colgroup}, @code{tbody}, and @code{thead} elements.  Erroneous
-;;; input, including invalid hexadecimal entity reference syntax and extraneous
-;;; double quotes in element tags, is now parsed better.
-;;; @code{htmlprag:token-kind} emits symbols more consistent with SXML.
-;;;
-;;; @item Version 0.2 --- 2003-02-02
-;;; Portability improvements.
-;;;
-;;; @item Version 0.1 --- 2003-01-31
-;;; Dusted off author's old Guile-specific code from April 2001, converted to
-;;; emit SXML, mostly ported to R5RS and SRFI-6, added some XHTML support and
-;;; documentation.  A little preliminary testing has been done, and the package
-;;; is already useful for some applications, but this release should be
-;;; considered a preview to invite comments.
-;;;
-;;; @end table
-
+(provide "htmlprag")

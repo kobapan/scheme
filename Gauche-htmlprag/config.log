@@ -1,0 +1,6 @@
+Configuring Gauche-htmlprag 1.0
+checking: for gosh
+result: /usr/local/bin/gosh
+checking: for gauche-install
+result: /usr/local/bin/gauche-install
+Message: creating Gauche-htmlprag.gpd
