@@ -12,7 +12,7 @@ Constructs an HTML tokenizer procedure on input port in. If boolean normalized? 
 
     (define input (open-input-string "<a href=\"foo\">bar</a>"))
     (define next  (make-html-tokenizer input #f))
-    (next) ==> (a (@@ (href "foo")))
+    (next) ==> (a (@ (href "foo")))
     (next) ==> "bar"
     (next) ==> (*END* a)
     (next) ==> ()
