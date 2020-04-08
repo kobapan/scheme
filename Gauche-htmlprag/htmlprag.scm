@@ -8,7 +8,7 @@
    ;; Tokenizing
    make-html-tokenizer tokenize-html
    ;; Parsing
-   html->shtml html->sxml
+   html->shtml
    ;; Emitting HTML
    write-shtml-as-html shtml->html))
 (select-module htmlprag)

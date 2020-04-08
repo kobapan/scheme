@@ -27,7 +27,6 @@ Returns a list of tokens from input port in, normalizing according to boolean no
     
 ## Parsing
 
-### (html->sxml input)
 ### (html->shtml input)
 Permissively parse HTML from input, which is either an input port or a string, and emit an SHTML equivalent or approximation.
 
