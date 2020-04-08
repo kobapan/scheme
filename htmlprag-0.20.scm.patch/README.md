@@ -1,4 +1,4 @@
-# htmlprag-0.20.scm
+# htmlprag.scm
 
 HtmlPrag provides permissive HTML parsing and emitting capability to Scheme programs.  The parser is useful for software agent extraction of information from Web pages, for programmatically transforming HTML files, and for implementing interactive Web browsers.  HtmlPrag emits SHTML, which is an encoding of HTML in [SXML](http://okmij.org/ftp/Scheme/SXML.html), so that conventional HTML may be processed with XML tools such as SXPath.
 
