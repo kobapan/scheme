@@ -1,12 +1,14 @@
 # htmlprag-0.20.scm
 
-This patch is for [htmlprag.rkt (htmlprag-0.20)](http://planet.racket-lang.org/package-source/neil/htmlprag.plt/1/7/htmlprag.rkt) to be used in other Scheme (Tested with Gauche 0.9.4).
+HtmlPrag provides permissive HTML parsing and emitting capability to Scheme programs.  The parser is useful for software agent extraction of information from Web pages, for programmatically transforming HTML files, and for implementing interactive Web browsers.  HtmlPrag emits SHTML, which is an encoding of HTML in [SXML](http://okmij.org/ftp/Scheme/SXML.html), so that conventional HTML may be processed with XML tools such as SXPath.
 
-HtmlPrag provides permissive HTML parsing and emitting capability to Scheme programs.  The parser is useful for software agent extraction of information from Web pages, for programmatically transforming HTML files, and for implementing interactive Web browsers.  HtmlPrag emits ``SHTML,'' which is an encoding of HTML in [SXML](http://okmij.org/ftp/Scheme/SXML.html), so that conventional HTML may be processed with XML tools such as SXPath.
+This is based on [htmlprag.rkt (htmlprag-0.20)](http://planet.racket-lang.org/package-source/neil/htmlprag.plt/1/7/htmlprag.rkt) to be used in other Scheme (Tested with Gauche 0.9.4).
+
 
 ## Tokenizing
 
 ### (make-html-tokenizer in normalized?)
+Constructs an HTML tokenizer procedure on input port in. If boolean normalized? is true, then tokens will be in a format conducive to use with a parser emitting normalized SXML. Each call to the resulting procedure yields a successive token from the input. When the tokens have been exhausted, the procedure returns the null list. 
 
     (define input (open-input-string "<a href=\"foo\">bar</a>"))
     (define next  (make-html-tokenizer input #f))
@@ -17,6 +19,7 @@ HtmlPrag provides permissive HTML parsing and emitting capability to Scheme prog
     (next) ==> ()
 
 ### (tokenize-html in normalized?)
+Returns a list of tokens from input port in, normalizing according to boolean normalized?. This is probably most useful as a debugging convenience.
 
     (tokenize-html (open-input-string "<a href=\"foo\">bar</a>") #f)
     ==>
@@ -26,6 +29,7 @@ HtmlPrag provides permissive HTML parsing and emitting capability to Scheme prog
 
 ### (html->sxml input)
 ### (html->shtml input)
+Permissively parse HTML from input, which is either an input port or a string, and emit an SHTML equivalent or approximation.
 
     (html->shtml
      "<html><head><title></title><title>whatever</title></head><body>\n<a href=\"url\">link</a><p align=center><ul compact style=\"aa\">\n<p>BLah<!-- comment <comment> --> <i> italic <b> bold <tt> ened</i>\nstill &lt; bold </b></body><P> But not done yet...")
